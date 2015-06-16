@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"reflect"
 	"sync"
 
@@ -25,7 +24,7 @@ func main() {
 
 	s := newSelector()
 
-	log.Println("Querying for stats...")
+	fmt.Println("Querying for running containers...")
 
 	containers, err := client.ListContainers(docker.ListContainersOptions{
 		All: true,
@@ -56,7 +55,7 @@ func main() {
 		go w.Watch()
 	}
 
-	log.Println("Waiting for stats...")
+	fmt.Println("Waiting for stats...")
 	s.Select()
 }
 
@@ -225,7 +224,7 @@ func dockerClient(host string, tls bool, certPath string) *docker.Client {
 	}
 
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 
 	return client
