@@ -27,7 +27,12 @@ func main() {
 
 	log.Println("Querying for stats...")
 
-	containers, err := client.ListContainers(docker.ListContainersOptions{All: true})
+	containers, err := client.ListContainers(docker.ListContainersOptions{
+		All: true,
+		Filters: map[string][]string{
+			"status": []string{"running"},
+		},
+	})
 	if err != nil {
 		panic(err)
 	}
@@ -72,6 +77,7 @@ func newWatcher(name string, client *docker.Client) *watcher {
 }
 
 func (w *watcher) Watch() {
+	fmt.Printf("Watching %s...\n", w.Name)
 	w.client.Stats(docker.StatsOptions{
 		ID:    w.Name,
 		Stats: w.Updates,
@@ -115,6 +121,7 @@ func (s *selector) Select() {
 		s.mu.Unlock()
 
 		if !ok {
+			fmt.Printf("Closing %s...\n", w.Name)
 			s.remove(chosen)
 			continue
 		}
