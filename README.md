@@ -1,6 +1,6 @@
-# Docker stats collector to Statsd
+# Docker Stats Agent
 
-This agent will run against the configured Docker daemon and watch for stats on all running containers and push those stats to a Statsd collector.
+This agent will run against the configured Docker daemon and watch for stats on all running containers and push those stats to a metrics collector such as Statsd.
 
 
 ## WARNING
@@ -13,8 +13,8 @@ This is a work in progress and doesn't actually do everything it claims to do ye
 The agent can be configured via CLI flags as well as environment variables that match (e.g. `-docker-cert-path` maps to `DOCKER_CERT_PATH`).
 
 ```ShellOutput
-$ docker-statsd-agent --help
-Usage of docker-statsd-agent:
+$ docker-stats-agent --help
+Usage of docker-stats-agent:
   -docker-cert-path="": path to the cert.pem, key.pem, and ca.pem for authenticating to Docker
   -docker-host="unix:///var/run/docker.sock": address of Docker host
   -docker-tls-verify=false: use TLS client for Docker
@@ -24,7 +24,7 @@ Usage of docker-statsd-agent:
 ## Example
 
 ```ShellOutput
-$ docker-statsd-agent
+$ docker-stats-agent
 Querying for running containers...
 Waiting for stats...
 Watching ba686b27f38d...
