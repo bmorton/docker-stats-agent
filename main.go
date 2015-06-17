@@ -15,13 +15,15 @@ func main() {
 	var dockerHost string
 	var dockerTLSVerify bool
 	var dockerCertPath string
+	var statsdHost string
 
 	flag.StringVar(&dockerHost, "docker-host", "unix:///var/run/docker.sock", "address of Docker host")
 	flag.BoolVar(&dockerTLSVerify, "docker-tls-verify", false, "use TLS client for Docker")
 	flag.StringVar(&dockerCertPath, "docker-cert-path", "", "path to the cert.pem, key.pem, and ca.pem for authenticating to Docker")
+	flag.StringVar(&statsdHost, "statsd-host", "127.0.0.1:8125", "host:port to the statsd instance")
 	flag.Parse()
 
-	sd, err := statsd.NewClient("127.0.0.1:8125", "docker.containers")
+	sd, err := statsd.NewClient(statsdHost, "docker.containers")
 	if err != nil {
 		panic(err)
 	}
