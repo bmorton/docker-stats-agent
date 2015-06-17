@@ -53,3 +53,8 @@ Closing feca1ee0100e...
 ba686b27f38d  0.00% 3.838 MB/2.105 GB 0.18% 9.554 kB/648 B
 ba686b27f38d  0.00% 3.838 MB/2.105 GB 0.18% 9.554 kB/648 B
 ```
+
+
+## License
+
+Code and documentation copyright 2015 Brian Morton. Code released under the MIT license.
