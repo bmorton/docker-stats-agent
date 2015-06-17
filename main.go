@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"sync"
 
+	"github.com/cactus/go-statsd-client/statsd"
 	"github.com/docker/docker/pkg/units"
 	"github.com/fsouza/go-dockerclient"
 	"github.com/namsral/flag"
@@ -20,9 +21,15 @@ func main() {
 	flag.StringVar(&dockerCertPath, "docker-cert-path", "", "path to the cert.pem, key.pem, and ca.pem for authenticating to Docker")
 	flag.Parse()
 
+	sd, err := statsd.NewClient("127.0.0.1:8125", "docker.containers")
+	if err != nil {
+		panic(err)
+	}
+	defer sd.Close()
+
 	client := dockerClient(dockerHost, dockerTLSVerify, dockerCertPath)
 
-	s := newSelector()
+	s := newSelector(sd)
 
 	fmt.Println("Querying for running containers...")
 
@@ -84,15 +91,17 @@ func (w *watcher) Watch() {
 }
 
 type selector struct {
-	cases    []reflect.SelectCase
-	watchers []*watcher
-	mu       sync.RWMutex
+	cases        []reflect.SelectCase
+	watchers     []*watcher
+	statsdClient statsd.Statter
+	mu           sync.RWMutex
 }
 
-func newSelector() *selector {
+func newSelector(statsdClient statsd.Statter) *selector {
 	return &selector{
-		cases:    make([]reflect.SelectCase, 0),
-		watchers: make([]*watcher, 0),
+		cases:        make([]reflect.SelectCase, 0),
+		watchers:     make([]*watcher, 0),
+		statsdClient: statsdClient,
 	}
 }
 
@@ -129,6 +138,19 @@ func (s *selector) Select() {
 		case reflect.Ptr:
 			ds := value.Elem().Interface().(docker.Stats)
 			w.Stats.Update(&ds)
+
+			prefix := fmt.Sprintf("%s.memory", w.Name)
+			s.statsdClient.Gauge(fmt.Sprintf("%s.used", prefix), int64(w.Stats.Memory), 1.0)
+			s.statsdClient.Gauge(fmt.Sprintf("%s.limit", prefix), int64(w.Stats.MemoryLimit), 1.0)
+			s.statsdClient.Gauge(fmt.Sprintf("%s.percent", prefix), int64(w.Stats.MemoryPercentage), 1.0)
+
+			prefix = fmt.Sprintf("%s.cpu", w.Name)
+			s.statsdClient.Gauge(fmt.Sprintf("%s.percent", prefix), int64(w.Stats.CPUPercentage), 1.0)
+
+			prefix = fmt.Sprintf("%s.network", w.Name)
+			s.statsdClient.Gauge(fmt.Sprintf("%s.rx", prefix), int64(w.Stats.NetworkRx), 1.0)
+			s.statsdClient.Gauge(fmt.Sprintf("%s.tx", prefix), int64(w.Stats.NetworkTx), 1.0)
+
 			w.Display()
 		}
 
