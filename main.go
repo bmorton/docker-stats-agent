@@ -201,7 +201,7 @@ func (s *stats) String() string {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
-	return fmt.Sprintf("%.2f%%\t%s/%s\t%.2f%%\t%s/%s",
+	return fmt.Sprintf("CPU: %.2f%%\tMemory: %s/%s (%.2f%%)\tNetwork: %s in, %s out",
 		s.CPUPercentage,
 		units.HumanSize(s.Memory), units.HumanSize(s.MemoryLimit),
 		s.MemoryPercentage,
